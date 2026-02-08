@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+
+  aggregation:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.aggregation
+    container_name: aggregation
+    ports:
+      - "50051:50051"
+    depends_on:
+      - analysis
+
+  analysis:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.analysis
+    container_name: analysis
+    ports:
+      - "50052:50052"
+
+  alert:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.alert
+    container_name: alert
+
+  storage:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.storage
+    container_name: storage
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.client
+    container_name: client
+
+  update:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.update
+    container_name: update
+
+  engine:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.engine
+    container_name: engine
+    depends_on:
+      - aggregation
+
+  battery:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.battery
+    container_name: battery
+    depends_on:
+      - aggregation
+
+  airdata:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.airdata
+    container_name: airdata
+    depends_on:
+      - aggregation
+
+  imu:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.imu
+    container_name: imu
+    depends_on:
+      - aggregation
+
+  gps:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.gps
+    container_name: gps
+    depends_on:
+      - aggregation

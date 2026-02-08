@@ -6,6 +6,4 @@ COPY src/ /app/
 
 RUN pip install --no-cache-dir grpcio grpcio-tools
 
-EXPOSE 50052
-
-CMD ["python", "analysis.py"]
+CMD ["python", "airdata_sensor.py"]

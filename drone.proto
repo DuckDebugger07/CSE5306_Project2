@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package drone;
+
+//////////////////////////////////////////////////////
+// Telemetry message used everywhere in the system
+//////////////////////////////////////////////////////
+
+message DroneData {
+  string node = 1;        // engine, battery, airdata, imu, gps
+  string signal = 2;      // EGT, voltage, altitude, vibration, latitude...
+  double value = 3;       // numeric telemetry value
+  int64 timestamp = 4;    // epoch milliseconds
+}
+
+//////////////////////////////////////////////////////
+// Generic acknowledgement
+//////////////////////////////////////////////////////
+
+message Ack {
+  bool ok = 1;
+}
+
+//////////////////////////////////////////////////////
+// Aggregation Service
+// Sensors -> Aggregation
+//////////////////////////////////////////////////////
+
+service Aggregation {
+  rpc Send (DroneData) returns (Ack);
+}
+
+//////////////////////////////////////////////////////
+// Analysis Service
+// Aggregation -> Analysis
+//////////////////////////////////////////////////////
+
+service Analysis {
+  rpc Analyze (DroneData) returns (Ack);
+}
+
+//////////////////////////////////////////////////////
+// Alert Service (future extension)
+// Analysis -> Alert
+//////////////////////////////////////////////////////
+
+message AlertEvent {
+  string source_node = 1;
+  string message = 2;
+  int64 timestamp = 3;
+}
+
+service Alert {
+  rpc RaiseAlert (AlertEvent) returns (Ack);
+}
