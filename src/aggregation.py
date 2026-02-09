@@ -26,24 +26,16 @@ class AggregationServicer(drone_pb2_grpc.AggregationServicer):
         self.gps_channel = grpc.insecure_channel(f"gps:{SENSOR_PORT + 3}")
         self.gps_stub = drone_pb2_grpc.SensorStub(self.gps_channel)
         
+        # self.imu_channel = grpc.insecure_channel(f"gps:{SENSOR_PORT + 4}")
+        # self.imu_stub = drone_pb2_grpc.SensorStub(self.imu_channel)
+        
         self.stubs = [
             self.airdata_stub,
             self.battery_stub,
             self.engine_stub,
-            self.gps_stub
+            self.gps_stub,
+            # self.imu_stub
         ]
-
-    def Send(self, request, context):
-        print(f"[AGG] {request.node}:{request.signal} = {request.value:.2f}")
-
-        # Forward to analysis
-        analysis_response = self.analysis_stub.Analyze(request)
-        
-        if not analysis_response.ok:
-            # send to alert node
-            pass
-
-        return drone_pb2.Ack(ok=analysis_response.ok, reason="")
     
     def GetSensorData(self, request, context):        
         for stub in self.stubs:

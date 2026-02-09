@@ -4,7 +4,7 @@ from concurrent import futures
 
 AGG = "aggregation:50051"
 
-class Gps(drone_pb2_grpc.SensorServicer):
+class GPS(drone_pb2_grpc.SensorServicer):
     t = 0
     
     def now (self):
@@ -28,7 +28,7 @@ class Gps(drone_pb2_grpc.SensorServicer):
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    drone_pb2_grpc.add_SensorServicer_to_server(Gps(), server)
+    drone_pb2_grpc.add_SensorServicer_to_server(GPS(), server)
     server.add_insecure_port("[::]:50063")
     server.start()
     print("Gps sensor running...")

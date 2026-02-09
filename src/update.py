@@ -10,8 +10,6 @@ def main():
         stub = drone_pb2_grpc.AggregationStub(channel)
         # response = stub.GetSensorData(drone_pb2.Empty())
         
-        # for ack in response:
-            # print(ack.reason)
         for ack in stub.GetSensorData(drone_pb2.Empty()):
             print(ack.reason.split(":"))
 
