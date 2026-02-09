@@ -60,15 +60,15 @@ services:
     depends_on:
       - aggregation
 
-  # imu:
-    # build:
-      # context: .
-      # dockerfile: Dockerfiles/Dockerfile.imu
-    # container_name: imu
-    # ports:
-      # - "50064:50064"
-    # depends_on:
-      # - aggregation
+  imu:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.imu
+    container_name: imu
+    ports:
+      - "50064:50064"
+    depends_on:
+      - aggregation
 
   # Alert Node
   # alert:

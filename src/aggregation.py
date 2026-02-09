@@ -26,15 +26,15 @@ class AggregationServicer(drone_pb2_grpc.AggregationServicer):
         self.gps_channel = grpc.insecure_channel(f"gps:{SENSOR_PORT + 3}")
         self.gps_stub = drone_pb2_grpc.SensorStub(self.gps_channel)
         
-        # self.imu_channel = grpc.insecure_channel(f"gps:{SENSOR_PORT + 4}")
-        # self.imu_stub = drone_pb2_grpc.SensorStub(self.imu_channel)
+        self.imu_channel = grpc.insecure_channel(f"imu:{SENSOR_PORT + 4}")
+        self.imu_stub = drone_pb2_grpc.SensorStub(self.imu_channel)
         
         self.stubs = [
             self.airdata_stub,
             self.battery_stub,
             self.engine_stub,
             self.gps_stub,
-            # self.imu_stub
+            self.imu_stub
         ]
     
     def GetSensorData(self, request, context):        
@@ -44,7 +44,7 @@ class AggregationServicer(drone_pb2_grpc.AggregationServicer):
             
             analysis = self.analysis_stub.Analyze(response)
             
-            yield drone_pb2.Ack(ok=True, reason=reason)
+            yield drone_pb2.Ack(ok=True, reason=reason if analysis.ok else analysis.reason)
             
 
 

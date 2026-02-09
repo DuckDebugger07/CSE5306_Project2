@@ -19,7 +19,7 @@ class IMU(drone_pb2_grpc.SensorServicer):
             node="imu",
             signal="vibration",
             value=vib,
-            timestamp=now()
+            timestamp=self.now()
         )
 
 def serve():
