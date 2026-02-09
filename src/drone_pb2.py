@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x64rone.proto\x12\x05\x64rone\"K\n\tDroneData\x12\x0c\n\x04node\x18\x01 \x01(\t\x12\x0e\n\x06signal\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\x01\x12\x11\n\ttimestamp\x18\x04 \x01(\x03\"\x11\n\x03\x41\x63k\x12\n\n\x02ok\x18\x01 \x01(\x08\"E\n\nAlertEvent\x12\x13\n\x0bsource_node\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x32\x33\n\x0b\x41ggregation\x12$\n\x04Send\x12\x10.drone.DroneData\x1a\n.drone.Ack23\n\x08\x41nalysis\x12\'\n\x07\x41nalyze\x12\x10.drone.DroneData\x1a\n.drone.Ack24\n\x05\x41lert\x12+\n\nRaiseAlert\x12\x11.drone.AlertEvent\x1a\n.drone.Ackb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x64rone.proto\x12\x05\x64rone\"K\n\tDroneData\x12\x0c\n\x04node\x18\x01 \x01(\t\x12\x0e\n\x06signal\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\x01\x12\x11\n\ttimestamp\x18\x04 \x01(\x03\"\x11\n\x03\x41\x63k\x12\n\n\x02ok\x18\x01 \x01(\x08\"E\n\nAlertEvent\x12\x13\n\x0bsource_node\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\"\x1e\n\x0b\x43lientQuery\x12\x0f\n\x07request\x18\x01 \x01(\t\"\x1c\n\x0bServerReply\x12\r\n\x05reply\x18\x01 \x01(\t\"\x07\n\x05\x45mpty23\n\x0b\x41ggregation\x12$\n\x04Send\x12\x10.drone.DroneData\x1a\n.drone.Ack23\n\x08\x41nalysis\x12\'\n\x07\x41nalyze\x12\x10.drone.DroneData\x1a\n.drone.Ack24\n\x05\x41lert\x12+\n\nRaiseAlert\x12\x11.drone.AlertEvent\x1a\n.drone.Ack2h\n\x05Query\x12(\n\x0c\x43heckRunning\x12\x0c.drone.Empty\x1a\n.drone.Ack\x12\x35\n\tSendQuery\x12\x12.drone.ClientQuery\x1a\x12.drone.ServerReply\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -37,10 +37,18 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ACK']._serialized_end=116
   _globals['_ALERTEVENT']._serialized_start=118
   _globals['_ALERTEVENT']._serialized_end=187
-  _globals['_AGGREGATION']._serialized_start=189
-  _globals['_AGGREGATION']._serialized_end=240
-  _globals['_ANALYSIS']._serialized_start=242
-  _globals['_ANALYSIS']._serialized_end=293
-  _globals['_ALERT']._serialized_start=295
-  _globals['_ALERT']._serialized_end=347
+  _globals['_CLIENTQUERY']._serialized_start=189
+  _globals['_CLIENTQUERY']._serialized_end=219
+  _globals['_SERVERREPLY']._serialized_start=221
+  _globals['_SERVERREPLY']._serialized_end=249
+  _globals['_EMPTY']._serialized_start=251
+  _globals['_EMPTY']._serialized_end=258
+  _globals['_AGGREGATION']._serialized_start=260
+  _globals['_AGGREGATION']._serialized_end=311
+  _globals['_ANALYSIS']._serialized_start=313
+  _globals['_ANALYSIS']._serialized_end=364
+  _globals['_ALERT']._serialized_start=366
+  _globals['_ALERT']._serialized_end=418
+  _globals['_QUERY']._serialized_start=420
+  _globals['_QUERY']._serialized_end=524
 # @@protoc_insertion_point(module_scope)

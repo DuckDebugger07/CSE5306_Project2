@@ -269,3 +269,127 @@ class Alert(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class QueryStub(object):
+    """////////////////////////////////////////////////////
+    Client Server Service
+    ////////////////////////////////////////////////////
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.CheckRunning = channel.unary_unary(
+                '/drone.Query/CheckRunning',
+                request_serializer=drone__pb2.Empty.SerializeToString,
+                response_deserializer=drone__pb2.Ack.FromString,
+                _registered_method=True)
+        self.SendQuery = channel.unary_unary(
+                '/drone.Query/SendQuery',
+                request_serializer=drone__pb2.ClientQuery.SerializeToString,
+                response_deserializer=drone__pb2.ServerReply.FromString,
+                _registered_method=True)
+
+
+class QueryServicer(object):
+    """////////////////////////////////////////////////////
+    Client Server Service
+    ////////////////////////////////////////////////////
+    """
+
+    def CheckRunning(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SendQuery(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_QueryServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'CheckRunning': grpc.unary_unary_rpc_method_handler(
+                    servicer.CheckRunning,
+                    request_deserializer=drone__pb2.Empty.FromString,
+                    response_serializer=drone__pb2.Ack.SerializeToString,
+            ),
+            'SendQuery': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendQuery,
+                    request_deserializer=drone__pb2.ClientQuery.FromString,
+                    response_serializer=drone__pb2.ServerReply.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'drone.Query', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('drone.Query', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Query(object):
+    """////////////////////////////////////////////////////
+    Client Server Service
+    ////////////////////////////////////////////////////
+    """
+
+    @staticmethod
+    def CheckRunning(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/drone.Query/CheckRunning',
+            drone__pb2.Empty.SerializeToString,
+            drone__pb2.Ack.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SendQuery(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/drone.Query/SendQuery',
+            drone__pb2.ClientQuery.SerializeToString,
+            drone__pb2.ServerReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

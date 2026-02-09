@@ -53,3 +53,24 @@ message AlertEvent {
 service Alert {
   rpc RaiseAlert (AlertEvent) returns (Ack);
 }
+
+//////////////////////////////////////////////////////
+// Client Server Service
+//////////////////////////////////////////////////////
+service Query
+{
+	rpc CheckRunning (Empty) returns (Ack);
+    rpc SendQuery (ClientQuery) returns (ServerReply) {}
+}
+
+message ClientQuery
+{
+    string request = 1;
+}
+
+message ServerReply
+{
+    string reply = 1;
+}
+
+message Empty{}
