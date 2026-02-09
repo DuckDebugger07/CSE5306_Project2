@@ -6,7 +6,7 @@ import drone_pb2_grpc
 
 class Query(drone_pb2_grpc.QueryServicer):
     def CheckRunning(self, unknown, context):
-        return drone_pb2.Ack(ok=True)
+        return drone_pb2.Ack(ok=True, reason="")
     
     def SendQuery(self, query, context):
         return drone_pb2.ServerReply(reply="I see you just said, %s!" % query.request);
