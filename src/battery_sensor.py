@@ -1,32 +1,35 @@
 import time, random, grpc
 import drone_pb2, drone_pb2_grpc
+from concurrent import futures
 
-AGG = "aggregation:50051"
+AGG = "aggregation:50060"
 
-def now(): return int(time.time()*1000)
-
-def main():
-    stub = drone_pb2_grpc.AggregationStub(grpc.insecure_channel(AGG))
+class Battery(drone_pb2_grpc.SensorServicer):
     voltage = 16.8
-
-    while True:
-        voltage -= 0.002
-
-        # fault injection: sudden sag
+    
+    def now (self):
+        return int(time.time()*1000)
+    
+    def GetData(self, unknown, context):
+        self.voltage -= 0.002
+        
         if random.random() < 0.04:
-            voltage -= random.uniform(1.5, 3.0)
-
-        msg = drone_pb2.DroneData(
+            self.voltage -= random.uniform(1.5, 3.0)
+        
+        return drone_pb2.DroneData(
             node="battery",
             signal="voltage",
-            value=voltage,
-            timestamp=now()
+            value=self.voltage,
+            timestamp=self.now()
         )
 
-        stub.Send(msg)
-        print(f"Battery V {voltage:.2f}")
-
-        time.sleep(0.1)
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    drone_pb2_grpc.add_SensorServicer_to_server(Battery(), server)
+    server.add_insecure_port("[::]:50061")
+    server.start()
+    print("Battery sensor running...")
+    server.wait_for_termination()
 
 if __name__ == "__main__":
-    main()
+    serve()

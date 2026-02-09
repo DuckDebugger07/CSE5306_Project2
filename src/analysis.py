@@ -8,16 +8,27 @@ import drone_pb2_grpc
 class AnalysisServicer(drone_pb2_grpc.AnalysisServicer):
 
     def Analyze(self, request, context):
+        reason = ""
+        
         if request.signal == "EGT" and request.value > 800:
-            print("[ALERT] Engine over-temp!")
+            reason = "Engine: over-temp!\n"
+            # print("[ALERT] Engine over-temp!")
+        else:
+            reason += "Engine: good"
 
         if request.signal == "voltage" and request.value < 13:
-            print("[ALERT] Battery low!")
+            reason += "Battery: low!\n"
+            # print("[ALERT] Battery low!")
+        else:
+            reason += "Battery: good"
 
         if request.signal == "vibration" and request.value > 0.8:
-            print("[ALERT] Excess vibration!")
+            reason += "Vibration: excess!\n"
+            # print("[ALERT] Excess vibration!")
+        else:
+            reason += "Vibration: good"
 
-        return drone_pb2.Ack(ok=True)
+        return drone_pb2.Ack(ok=True, reason=reason)
 
 
 def serve():

@@ -44,6 +44,11 @@ class AggregationStub(object):
                 request_serializer=drone__pb2.DroneData.SerializeToString,
                 response_deserializer=drone__pb2.Ack.FromString,
                 _registered_method=True)
+        self.GetSensorData = channel.unary_stream(
+                '/drone.Aggregation/GetSensorData',
+                request_serializer=drone__pb2.Empty.SerializeToString,
+                response_deserializer=drone__pb2.Ack.FromString,
+                _registered_method=True)
 
 
 class AggregationServicer(object):
@@ -60,12 +65,23 @@ class AggregationServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetSensorData(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AggregationServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Send': grpc.unary_unary_rpc_method_handler(
                     servicer.Send,
                     request_deserializer=drone__pb2.DroneData.FromString,
+                    response_serializer=drone__pb2.Ack.SerializeToString,
+            ),
+            'GetSensorData': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetSensorData,
+                    request_deserializer=drone__pb2.Empty.FromString,
                     response_serializer=drone__pb2.Ack.SerializeToString,
             ),
     }
@@ -101,6 +117,105 @@ class Aggregation(object):
             '/drone.Aggregation/Send',
             drone__pb2.DroneData.SerializeToString,
             drone__pb2.Ack.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetSensorData(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/drone.Aggregation/GetSensorData',
+            drone__pb2.Empty.SerializeToString,
+            drone__pb2.Ack.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class SensorStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.GetData = channel.unary_unary(
+                '/drone.Sensor/GetData',
+                request_serializer=drone__pb2.Empty.SerializeToString,
+                response_deserializer=drone__pb2.DroneData.FromString,
+                _registered_method=True)
+
+
+class SensorServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def GetData(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_SensorServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'GetData': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetData,
+                    request_deserializer=drone__pb2.Empty.FromString,
+                    response_serializer=drone__pb2.DroneData.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'drone.Sensor', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('drone.Sensor', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Sensor(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def GetData(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/drone.Sensor/GetData',
+            drone__pb2.Empty.SerializeToString,
+            drone__pb2.DroneData.FromString,
             options,
             channel_credentials,
             insecure,

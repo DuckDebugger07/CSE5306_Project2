@@ -19,6 +19,7 @@ message DroneData {
 
 message Ack {
   bool ok = 1;
+  string reason = 2;
 }
 
 //////////////////////////////////////////////////////
@@ -28,6 +29,11 @@ message Ack {
 
 service Aggregation {
   rpc Send (DroneData) returns (Ack);
+  rpc GetSensorData (Empty) returns (stream Ack);
+}
+
+service Sensor{
+  rpc GetData (Empty) returns (DroneData);
 }
 
 //////////////////////////////////////////////////////

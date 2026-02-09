@@ -6,20 +6,54 @@ import drone_pb2
 import drone_pb2_grpc
 
 ANALYSIS_ADDR = "analysis:50052"
+SENSOR_PORT = 50060
 
 
 class AggregationServicer(drone_pb2_grpc.AggregationServicer):
     def __init__(self):
         self.analysis_channel = grpc.insecure_channel(ANALYSIS_ADDR)
         self.analysis_stub = drone_pb2_grpc.AnalysisStub(self.analysis_channel)
+        
+        self.airdata_channel = grpc.insecure_channel(f"airdata:{SENSOR_PORT + 0}")
+        self.airdata_stub = drone_pb2_grpc.SensorStub(self.airdata_channel)
+        
+        self.battery_channel = grpc.insecure_channel(f"battery:{SENSOR_PORT + 1}")
+        self.battery_stub = drone_pb2_grpc.SensorStub(self.battery_channel)
+        
+        self.engine_channel = grpc.insecure_channel(f"engine:{SENSOR_PORT + 2}")
+        self.engine_stub = drone_pb2_grpc.SensorStub(self.engine_channel)
+        
+        self.gps_channel = grpc.insecure_channel(f"gps:{SENSOR_PORT + 3}")
+        self.gps_stub = drone_pb2_grpc.SensorStub(self.gps_channel)
+        
+        self.stubs = [
+            self.airdata_stub,
+            self.battery_stub,
+            self.engine_stub,
+            self.gps_stub
+        ]
 
     def Send(self, request, context):
         print(f"[AGG] {request.node}:{request.signal} = {request.value:.2f}")
 
         # Forward to analysis
-        self.analysis_stub.Analyze(request)
+        analysis_response = self.analysis_stub.Analyze(request)
+        
+        if not analysis_response.ok:
+            # send to alert node
+            pass
 
-        return drone_pb2.Ack(ok=True)
+        return drone_pb2.Ack(ok=analysis_response.ok, reason="")
+    
+    def GetSensorData(self, request, context):        
+        for stub in self.stubs:
+            response = stub.GetData(drone_pb2.Empty())
+            reason = f"{response.node}: {response.signal}, {response.value}, {response.timestamp}\n"
+            
+            analysis = self.analysis_stub.Analyze(response)
+            
+            yield drone_pb2.Ack(ok=True, reason=reason)
+            
 
 
 def serve():

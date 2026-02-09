@@ -4,4 +4,6 @@ WORKDIR /app
 
 COPY src/ /app/
 
+RUN pip install --no-cache-dir grpcio grpcio-tools
+
 CMD ["python", "update.py"]
