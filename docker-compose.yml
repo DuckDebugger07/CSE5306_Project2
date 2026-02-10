@@ -19,6 +19,7 @@ services:
     depends_on:
       - analysis
 
+  # Sensor Nodes
   airdata:
     build:
       context: .
@@ -38,8 +39,7 @@ services:
       - "50061:50061"
     depends_on:
       - aggregation
-
-  # Sensor Nodes
+      
   engine:
     build:
       context: .
@@ -71,11 +71,11 @@ services:
       - aggregation
 
   # Alert Node
-  # alert:
-    # build:
-      # context: .
-      # dockerfile: Dockerfiles/Dockerfile.alert
-    # container_name: alert
+  alert:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.alert
+    container_name: alert
 
   # Storage Node
   # storage:
@@ -85,30 +85,33 @@ services:
     # container_name: storage
 
   # Server Node
-  # server:
-    # build:
-      # context: .
-      # dockerfile: Dockerfiles/Dockerfile.server
-    # container_name: server
-    # ports:
-      # - "50053:50053"
-    # depends_on:
-      # - analysis
-    # networks:
-      # - drone-net
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.server
+    container_name: server
+    tty: true
+    ports:
+      - "50053:50053"
+    depends_on:
+      - update
+    networks:
+      - drone-net
+    volumes:
+      - data:/data
 
   # Client Node
-  # client:
-    # build:
-      # context: .
-      # dockerfile: Dockerfiles/Dockerfile.client
-    # container_name: client
-    # tty: true
-    # stdin_open: true
-    # depends_on:
-      # - server
-    # networks:
-      # - drone-net
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.client
+    container_name: client
+    tty: true
+    stdin_open: true
+    depends_on:
+      - server
+    networks:
+      - drone-net
 
   # Update Node
   update:
@@ -126,3 +129,6 @@ services:
 networks:
   drone-net:
     driver: bridge
+
+volumes:
+    data:

@@ -8,15 +8,16 @@ SERVER_ADDR = "server:50053"
 def run():
     print("Checking if Server is up ...")
     
-    with grpc.insecure_channel(SERVER_ADDR) as channel:
-        stub = drone_pb2_grpc.QueryStub(channel)
-        response = stub.CheckRunning(drone_pb2.Empty())
+    while True:
+        with grpc.insecure_channel(SERVER_ADDR) as channel:
+            stub = drone_pb2_grpc.QueryStub(channel)
+            response = stub.CheckRunning(drone_pb2.Empty())
 
-    if response.ok:
-        print("Server is up!")
-    else:
-        print("Server is not up, exiting...!")
-        exit()
+        if response.ok:
+            print("Server is up!")
+            break
+        else:
+            print("Retrying...!")
     
     usr_query = ""
     
