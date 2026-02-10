@@ -39,18 +39,17 @@ if __name__ == "__main__":
 
 # client queries server
 # server processes queries to database
-#   ADD drone A
-#   VIEW drone A
-#      if empty, call update
-#      update calls aggregation
-#      aggregation calls sensors || sensors call aggregation with data
-#      aggregation calls analyze
-#      analyze sends Succeed (no errors) or Fail (yes errors) with msg to aggregation
-#      if aggregation gets Fail from analyze, send err msg to update
-#      else send sensor data to update
-#      update updates database
-#      update sends ack to database
-#      server queries database and sends results to client
+#   ADD drone A (DONE)
+#   VIEW drone A (DONE)
+#      show specific or all drone date (DONE)
+#      if seeing specific drone and has None in value, then call update (DONE)
+#         Update updates database (TODO)
+#            If sensor gives error, put None (TODO)
+#            Else put sensor data
+#      Server will get Ack from Update and read db
+#   UPDATE drone A (TODO)
+#      Update specific drone with new values
+#      Server will get Ack from Update and read db
 
 
 # SIMPLIFIED WITHOUT STORAGE
