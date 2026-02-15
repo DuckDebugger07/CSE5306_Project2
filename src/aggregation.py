@@ -40,11 +40,16 @@ class AggregationServicer(drone_pb2_grpc.AggregationServicer):
     def GetSensorData(self, request, context):        
         for stub in self.stubs:
             response = stub.GetData(drone_pb2.Empty())
-            reason = f"{response.node}: {response.signal}, {response.value}, {response.timestamp}\n"
+            reason = f"{response.signal}: {response.value}\n"
             
             analysis = self.analysis_stub.Analyze(response)
             
-            yield drone_pb2.Ack(ok=True, reason=reason if analysis.ok else analysis.reason)
+            print(f"{analysis.ok} {analysis.reason} {response}")
+            
+            if analysis.ok:
+                yield drone_pb2.Ack(ok=True, reason=reason)
+            else:
+                yield drone_pb2.Ack(ok=False, reason=analysis.reason)
             
 
 

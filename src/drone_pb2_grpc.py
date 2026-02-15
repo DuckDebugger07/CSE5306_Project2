@@ -25,6 +25,93 @@ if _version_not_supported:
     )
 
 
+class UpdateStub(object):
+    """////////////////////////////////////////////////////
+    Update Service
+    Upfate -> Aggregation
+    ////////////////////////////////////////////////////
+
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.UpdateSensors = channel.unary_stream(
+                '/drone.Update/UpdateSensors',
+                request_serializer=drone__pb2.ClientQuery.SerializeToString,
+                response_deserializer=drone__pb2.Ack.FromString,
+                _registered_method=True)
+
+
+class UpdateServicer(object):
+    """////////////////////////////////////////////////////
+    Update Service
+    Upfate -> Aggregation
+    ////////////////////////////////////////////////////
+
+    """
+
+    def UpdateSensors(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_UpdateServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'UpdateSensors': grpc.unary_stream_rpc_method_handler(
+                    servicer.UpdateSensors,
+                    request_deserializer=drone__pb2.ClientQuery.FromString,
+                    response_serializer=drone__pb2.Ack.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'drone.Update', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('drone.Update', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Update(object):
+    """////////////////////////////////////////////////////
+    Update Service
+    Upfate -> Aggregation
+    ////////////////////////////////////////////////////
+
+    """
+
+    @staticmethod
+    def UpdateSensors(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/drone.Update/UpdateSensors',
+            drone__pb2.ClientQuery.SerializeToString,
+            drone__pb2.Ack.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
 class AggregationStub(object):
     """////////////////////////////////////////////////////
     Aggregation Service
@@ -39,11 +126,6 @@ class AggregationStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Send = channel.unary_unary(
-                '/drone.Aggregation/Send',
-                request_serializer=drone__pb2.DroneData.SerializeToString,
-                response_deserializer=drone__pb2.Ack.FromString,
-                _registered_method=True)
         self.GetSensorData = channel.unary_stream(
                 '/drone.Aggregation/GetSensorData',
                 request_serializer=drone__pb2.Empty.SerializeToString,
@@ -59,12 +141,6 @@ class AggregationServicer(object):
 
     """
 
-    def Send(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def GetSensorData(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -74,11 +150,6 @@ class AggregationServicer(object):
 
 def add_AggregationServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Send': grpc.unary_unary_rpc_method_handler(
-                    servicer.Send,
-                    request_deserializer=drone__pb2.DroneData.FromString,
-                    response_serializer=drone__pb2.Ack.SerializeToString,
-            ),
             'GetSensorData': grpc.unary_stream_rpc_method_handler(
                     servicer.GetSensorData,
                     request_deserializer=drone__pb2.Empty.FromString,
@@ -99,33 +170,6 @@ class Aggregation(object):
     ////////////////////////////////////////////////////
 
     """
-
-    @staticmethod
-    def Send(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/drone.Aggregation/Send',
-            drone__pb2.DroneData.SerializeToString,
-            drone__pb2.Ack.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
 
     @staticmethod
     def GetSensorData(request,
@@ -408,6 +452,11 @@ class QueryStub(object):
                 request_serializer=drone__pb2.ClientQuery.SerializeToString,
                 response_deserializer=drone__pb2.ServerReply.FromString,
                 _registered_method=True)
+        self.UpdateData = channel.unary_unary(
+                '/drone.Query/UpdateData',
+                request_serializer=drone__pb2.Empty.SerializeToString,
+                response_deserializer=drone__pb2.Ack.FromString,
+                _registered_method=True)
 
 
 class QueryServicer(object):
@@ -428,6 +477,12 @@ class QueryServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateData(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_QueryServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -440,6 +495,11 @@ def add_QueryServicer_to_server(servicer, server):
                     servicer.SendQuery,
                     request_deserializer=drone__pb2.ClientQuery.FromString,
                     response_serializer=drone__pb2.ServerReply.SerializeToString,
+            ),
+            'UpdateData': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateData,
+                    request_deserializer=drone__pb2.Empty.FromString,
+                    response_serializer=drone__pb2.Ack.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -499,6 +559,33 @@ class Query(object):
             '/drone.Query/SendQuery',
             drone__pb2.ClientQuery.SerializeToString,
             drone__pb2.ServerReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateData(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/drone.Query/UpdateData',
+            drone__pb2.Empty.SerializeToString,
+            drone__pb2.Ack.FromString,
             options,
             channel_credentials,
             insecure,

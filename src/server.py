@@ -6,11 +6,16 @@ from concurrent import futures
 import drone_pb2
 import drone_pb2_grpc
 
+UPDT = "update:50054"
+
 class Query(drone_pb2_grpc.QueryServicer):
     def __init__ (self):
         super().__init__()
         
         self.db_path = "/data/data.db"
+        
+        self.update_channel = grpc.insecure_channel(UPDT)
+        self.update_stub = drone_pb2_grpc.UpdateStub(self.update_channel)
         
         self.init_db()
     
@@ -84,13 +89,31 @@ class Query(drone_pb2_grpc.QueryServicer):
         conn.close()
         
         return ret
+    
+    def update_data(self, drone_name):
+        reply = "ERRORS:\n"
+        
+        for ack in self.update_stub.UpdateSensors(drone_pb2.ClientQuery(request=drone_name)):
+            if ack.ok:
+                print(f"SUCCESS: {ack.reason}")
+            else:
+                print(f"FAIL: {ack.reason}")
+            # if not ack.ok:
+                # reply += f"   -{ack.reason}"
+        
+        if reply == "ERRORS:\n":
+            reply = "Updated Successfully!"
+        
+        return reply
         
     def CheckRunning(self, unknown, context):
         return drone_pb2.Ack(ok=True, reason="")
     
     def SendQuery(self, query, context):
+        print(query.request.upper())
+        
         if query.request.upper() == "QUIT":
-            return drone_pb2.ServerReply(reply="")
+            return drone_pb2.ServerReply(reply="Quitting...")
         
         query_parts = query.request.split(" ")
         
@@ -106,6 +129,12 @@ class Query(drone_pb2_grpc.QueryServicer):
         
         elif query_parts[0].upper() == "VIEW":
             reply = self.view_drone(query_parts[1])
+        
+        elif query_parts[0].upper() == "UPDATE":
+            reply = self.update_data(query_parts[1])
+        
+        else:
+            reply = f"Unknown Request: {query_parts[0].upper()}"
         
         return drone_pb2.ServerReply(reply=reply)
 

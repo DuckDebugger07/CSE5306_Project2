@@ -23,12 +23,20 @@ message Ack {
 }
 
 //////////////////////////////////////////////////////
+// Update Service
+// Upfate -> Aggregation
+//////////////////////////////////////////////////////
+
+service Update {
+  rpc UpdateSensors (ClientQuery) returns (stream Ack);
+}
+
+//////////////////////////////////////////////////////
 // Aggregation Service
 // Sensors -> Aggregation
 //////////////////////////////////////////////////////
 
 service Aggregation {
-  rpc Send (DroneData) returns (Ack);
   rpc GetSensorData (Empty) returns (stream Ack);
 }
 
@@ -67,6 +75,7 @@ service Query
 {
 	rpc CheckRunning (Empty) returns (Ack);
     rpc SendQuery (ClientQuery) returns (ServerReply) {}
+	rpc UpdateData (Empty) returns (Ack);
 }
 
 message ClientQuery

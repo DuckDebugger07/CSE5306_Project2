@@ -19,7 +19,7 @@ class Engine(drone_pb2_grpc.SensorServicer):
         
         return drone_pb2.DroneData(
             node="engine",
-            signal="EGT",
+            signal="egt",
             value=egt,
             timestamp=self.now()
         )
