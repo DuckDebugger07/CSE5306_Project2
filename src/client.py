@@ -42,14 +42,15 @@ if __name__ == "__main__":
 #   ADD drone A (DONE)
 #   VIEW drone A (DONE)
 #      show specific or all drone date (DONE)
-#      if seeing specific drone and has None in value, then call update (DONE)
-#         Update updates database (TODO)
-#            If sensor gives error, put None (TODO)
-#            Else put sensor data
-#      Server will get Ack from Update and read db
+#      -- if seeing specific drone and has None in value, then call update (DONE)
+#         -- Update updates database (TODO)
+#            -- If sensor gives error, put None (TODO)
+#            -- Else put sensor data
+#      -- Server will get Ack from Update and read db
 #   UPDATE drone A (TODO)
-#      Update specific drone with new values
-#      Server will get Ack from Update and read db
+#      Update get new values from aggregation (DONE)
+#      Update specific drone with new values (TODO)
+#      Server will get Ack from Update and read db (TODO)
 
 
 # SIMPLIFIED WITHOUT STORAGE
@@ -57,7 +58,8 @@ if __name__ == "__main__":
 # update calls aggregation (DONE)
 # aggregation calls all sensors (DONE)
 #    sensors respond to aggregation (DONE)
-#    aggregation sends sensor info to analysis (TODO)
-#    analysis checks sensor info and respond (SEMI-DONE)
-# aggregation sends results to update (TODO)
-# update prints results (TODO)
+#    aggregation sends sensor info to analysis (DONE)
+#    analysis checks sensor info and respond (DONE)
+# aggregation sends results to update (DONE)
+# update sends results to server (DONE)
+# server prints results (DONE)
