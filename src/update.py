@@ -27,6 +27,7 @@ class UpdateServicer(drone_pb2_grpc.UpdateServicer):
     def UpdateSensors(self, request, context):
         drone_name = request.request
         sensor_data = {}
+        failures = []
         
         for ack in self.aggregation_stub.GetSensorData(drone_pb2.Empty()):
             key, value = ack.reason.split(":")
@@ -35,21 +36,35 @@ class UpdateServicer(drone_pb2_grpc.UpdateServicer):
             
             else:
                 sensor_data[key] = None
-            
-            yield drone_pb2.Ack(ok=ack.ok, reason=f"{key} : {value}")
+                failures.append(f"{key} : {value}")
+        print(failures)
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
         
-        # cursor.execute("""
-            # UPDATE sensors
-            # SET
-                # altitude = ?
-                # voltage = ?
-                # egt = ?
-                # latitude = ?
-                # vibration = ?
-            # WHERE name = ?
-        # """, (sensor_data))
+        cursor.execute("""
+            UPDATE sensors
+            SET
+                altitude = ?,
+                voltage = ?,
+                egt = ?,
+                latitude = ?,
+                vibration = ?
+            WHERE name = ?
+        """, (
+            sensor_data.get("altitude"),
+            sensor_data.get("voltage"),
+            sensor_data.get("egt"),
+            sensor_data.get("latitude"),
+            sensor_data.get("vibration"),
+            drone_name
+            )
+        )
         
+        conn.commit()
+        conn.close()
         
+        for fail in failures:
+            yield drone_pb2.Ack(ok=False, reason=fail)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

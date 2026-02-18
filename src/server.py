@@ -65,10 +65,16 @@ class Query(drone_pb2_grpc.QueryServicer):
                 # Table Header
                 ret = " | ".join([c.center(9).upper() for c in cols])
                 ret += '\n' + '-' * 69 + '\n'
-                
+                # breakpoint()
                 # Table Data
                 for record in data:
-                    ret += " | ".join([f"{item}".center(9) for item in record[1:]])
+                    ret += " | ".join(
+                        [
+                            f"{item:3.5f}".center(9) if isinstance(item, float) else
+                            f"{item}".center(9)
+                            for item in record[1:]
+                        ]
+                    )
                     ret += "\n"
         
         else:
@@ -91,17 +97,18 @@ class Query(drone_pb2_grpc.QueryServicer):
         return ret
     
     def update_data(self, drone_name):
-        reply = "ERRORS:\n"
+        failures = []
         
         for ack in self.update_stub.UpdateSensors(drone_pb2.ClientQuery(request=drone_name)):
-            if ack.ok:
-                print(f"SUCCESS: {ack.reason}")
-            else:
-                print(f"FAIL: {ack.reason}")
-            # if not ack.ok:
-                # reply += f"   -{ack.reason}"
+            if not ack.ok:
+                failures.append(ack.reason)
         
-        if reply == "ERRORS:\n":
+        if failures:
+            reply = "ERRORS:\n"
+            for fail in failures:
+                reply += f"   -{fail}\n"
+        
+        else:
             reply = "Updated Successfully!"
         
         return reply

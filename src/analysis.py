@@ -13,21 +13,21 @@ class AnalysisServicer(drone_pb2_grpc.AnalysisServicer):
         
         if request.signal == "egt":
             if request.value > 800:
-                reason = "Engine: over-temp!\n"
+                reason = "Engine: over-temp!"
                 ack_bool = False
             else:
                 reason = "Engine: good"
 
         if request.signal == "voltage":
             if request.value < 13:
-                reason = "Battery: low!\n"
+                reason = "Battery: low!"
                 ack_bool = False
             else:
                 reason = "Battery: good"
 
         if request.signal == "vibration":
             if request.value > 0.8:
-                reason = "Vibration: excess!\n"
+                reason = "Vibration: excess!"
                 ack_bool = False
             else:
                 reason = "Vibration: good"

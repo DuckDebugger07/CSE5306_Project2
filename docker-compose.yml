@@ -72,27 +72,12 @@ services:
     depends_on:
       - aggregation
 
-  # Alert Node
-  # alert:
-    # build:
-      # context: .
-      # dockerfile: Dockerfiles/Dockerfile.alert
-    # container_name: alert
-
-  # Storage Node
-  # storage:
-    # build:
-      # context: .
-      # dockerfile: Dockerfiles/Dockerfile.storage
-    # container_name: storage
-
   # Server Node
   server:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.server
     container_name: server
-    tty: true
     ports:
       - "50053:50053"
     depends_on:
