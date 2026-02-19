@@ -1,4 +1,5 @@
 import grpc
+from time import time
 
 import drone_pb2
 import drone_pb2_grpc
@@ -24,42 +25,19 @@ def run():
     while usr_query != "quit":
         usr_query = input("Query: ")
         
+        start = time()
+        
         with grpc.insecure_channel(SERVER_ADDR) as channel:
             stub = drone_pb2_grpc.QueryStub(channel)
             response = stub.SendQuery(drone_pb2.ClientQuery(request=usr_query))
         
+        end = time()
+        
         print(f"\n{'=' * 20}")
+        print(f"Time Taken: {end - start}", end="\n\n")
         print(response.reply)
-        print(f"{'=' * 20}\n")
+        print(f"{'=' * 20}", end="\n\n")
 
 
 if __name__ == "__main__":
     run()
-
-
-# client queries server
-# server processes queries to database
-#   ADD drone A (DONE)
-#   VIEW drone A (DONE)
-#      show specific or all drone date (DONE)
-#      -- if seeing specific drone and has None in value, then call update (DONE)
-#         -- Update updates database (TODO)
-#            -- If sensor gives error, put None (TODO)
-#            -- Else put sensor data
-#      -- Server will get Ack from Update and read db
-#   UPDATE drone A (TODO)
-#      Update get new values from aggregation (DONE)
-#      Update specific drone with new values (TODO)
-#      Server will get Ack from Update and read db (TODO)
-
-
-# SIMPLIFIED WITHOUT STORAGE
-# server calls update
-# update calls aggregation (DONE)
-# aggregation calls all sensors (DONE)
-#    sensors respond to aggregation (DONE)
-#    aggregation sends sensor info to analysis (DONE)
-#    analysis checks sensor info and respond (DONE)
-# aggregation sends results to update (DONE)
-# update sends results to server (DONE)
-# server prints results (DONE)

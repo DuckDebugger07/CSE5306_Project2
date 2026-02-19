@@ -48,6 +48,17 @@ class Query(drone_pb2_grpc.QueryServicer):
         
         return f"Added {drone_name}!"
     
+    def remove_drone(self, drone_name):        
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("DELETE FROM sensors WHERE name = (?)", (drone_name.upper()))
+        
+        conn.commit()
+        conn.close()
+        
+        return f"Removed {drone_name}!"
+    
     def view_drone(self, drone_name):
         cols = ["Name", "Altitude", "Voltage", "EGT", "Latitude", "Vibration"]
         
@@ -133,6 +144,9 @@ class Query(drone_pb2_grpc.QueryServicer):
         
         if query_parts[0].upper() == "ADD":
             reply = self.add_drone(query_parts[1])
+        
+        elif query_parts[0].upper() == "REMOVE":
+            reply = self.remove_drone(query_parts[1])
         
         elif query_parts[0].upper() == "VIEW":
             reply = self.view_drone(query_parts[1])
