@@ -24,35 +24,29 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x64rone.proto\x12\x05\x64rone\"K\n\tDroneData\x12\x0c\n\x04node\x18\x01 \x01(\t\x12\x0e\n\x06signal\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\x01\x12\x11\n\ttimestamp\x18\x04 \x01(\x03\"!\n\x03\x41\x63k\x12\n\n\x02ok\x18\x01 \x01(\x08\x12\x0e\n\x06reason\x18\x02 \x01(\t\"E\n\nAlertEvent\x12\x13\n\x0bsource_node\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\"\x1e\n\x0b\x43lientQuery\x12\x0f\n\x07request\x18\x01 \x01(\t\"\x1c\n\x0bServerReply\x12\r\n\x05reply\x18\x01 \x01(\t\"\x07\n\x05\x45mpty2;\n\x06Update\x12\x31\n\rUpdateSensors\x12\x12.drone.ClientQuery\x1a\n.drone.Ack0\x01\x32:\n\x0b\x41ggregation\x12+\n\rGetSensorData\x12\x0c.drone.Empty\x1a\n.drone.Ack0\x01\x32\x33\n\x06Sensor\x12)\n\x07GetData\x12\x0c.drone.Empty\x1a\x10.drone.DroneData23\n\x08\x41nalysis\x12\'\n\x07\x41nalyze\x12\x10.drone.DroneData\x1a\n.drone.Ack24\n\x05\x41lert\x12+\n\nRaiseAlert\x12\x11.drone.AlertEvent\x1a\n.drone.Ack2\x90\x01\n\x05Query\x12(\n\x0c\x43heckRunning\x12\x0c.drone.Empty\x1a\n.drone.Ack\x12\x35\n\tSendQuery\x12\x12.drone.ClientQuery\x1a\x12.drone.ServerReply\"\x00\x12&\n\nUpdateData\x12\x0c.drone.Empty\x1a\n.drone.Ackb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x64rone.proto\x12\x05\x64rone\"\x07\n\x05\x45mpty\"Y\n\tTelemetry\x12\x0e\n\x06signal\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\r\n\x05\x61lert\x18\x03 \x01(\x08\x12\x0f\n\x07message\x18\x04 \x01(\t\x12\r\n\x05ts_ms\x18\x05 \x01(\x03\"\x17\n\x07\x43ommand\x12\x0c\n\x04text\x18\x01 \x01(\t\"\x15\n\x05Reply\x12\x0c\n\x04text\x18\x01 \x01(\t28\n\x06Sensor\x12.\n\x0cGetTelemetry\x12\x0c.drone.Empty\x1a\x10.drone.Telemetry2B\n\x0b\x41ggregation\x12\x33\n\x0fStreamTelemetry\x12\x0c.drone.Empty\x1a\x10.drone.Telemetry0\x01\x32>\n\x08\x41nalysis\x12\x32\n\x0eStreamAnalyzed\x12\x0c.drone.Empty\x1a\x10.drone.Telemetry0\x01\x32g\n\x06Update\x12\x30\n\x0cStreamUpdate\x12\x0c.drone.Empty\x1a\x10.drone.Telemetry0\x01\x12+\n\x0bSendCommand\x12\x0e.drone.Command\x1a\x0c.drone.Reply25\n\x06Server\x12+\n\x0bSendCommand\x12\x0e.drone.Command\x1a\x0c.drone.Replyb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'drone_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_DRONEDATA']._serialized_start=22
-  _globals['_DRONEDATA']._serialized_end=97
-  _globals['_ACK']._serialized_start=99
-  _globals['_ACK']._serialized_end=132
-  _globals['_ALERTEVENT']._serialized_start=134
-  _globals['_ALERTEVENT']._serialized_end=203
-  _globals['_CLIENTQUERY']._serialized_start=205
-  _globals['_CLIENTQUERY']._serialized_end=235
-  _globals['_SERVERREPLY']._serialized_start=237
-  _globals['_SERVERREPLY']._serialized_end=265
-  _globals['_EMPTY']._serialized_start=267
-  _globals['_EMPTY']._serialized_end=274
-  _globals['_UPDATE']._serialized_start=276
-  _globals['_UPDATE']._serialized_end=335
-  _globals['_AGGREGATION']._serialized_start=337
-  _globals['_AGGREGATION']._serialized_end=395
-  _globals['_SENSOR']._serialized_start=397
-  _globals['_SENSOR']._serialized_end=448
-  _globals['_ANALYSIS']._serialized_start=450
-  _globals['_ANALYSIS']._serialized_end=501
-  _globals['_ALERT']._serialized_start=503
-  _globals['_ALERT']._serialized_end=555
-  _globals['_QUERY']._serialized_start=558
-  _globals['_QUERY']._serialized_end=702
+  _globals['_EMPTY']._serialized_start=22
+  _globals['_EMPTY']._serialized_end=29
+  _globals['_TELEMETRY']._serialized_start=31
+  _globals['_TELEMETRY']._serialized_end=120
+  _globals['_COMMAND']._serialized_start=122
+  _globals['_COMMAND']._serialized_end=145
+  _globals['_REPLY']._serialized_start=147
+  _globals['_REPLY']._serialized_end=168
+  _globals['_SENSOR']._serialized_start=170
+  _globals['_SENSOR']._serialized_end=226
+  _globals['_AGGREGATION']._serialized_start=228
+  _globals['_AGGREGATION']._serialized_end=294
+  _globals['_ANALYSIS']._serialized_start=296
+  _globals['_ANALYSIS']._serialized_end=358
+  _globals['_UPDATE']._serialized_start=360
+  _globals['_UPDATE']._serialized_end=463
+  _globals['_SERVER']._serialized_start=465
+  _globals['_SERVER']._serialized_end=518
 # @@protoc_insertion_point(module_scope)

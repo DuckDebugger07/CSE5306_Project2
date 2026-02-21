@@ -1,121 +1,84 @@
 services:
-  # Analysis Node
-  analysis:
-    build:
-      context: .
-      dockerfile: Dockerfiles/Dockerfile.analysis
-    container_name: analysis
-    ports:
-      - "50052:50052"
-    tty: true
-      
-  # Aggregation Node
-  aggregation:
-    build:
-      context: .
-      dockerfile: Dockerfiles/Dockerfile.aggregation
-    container_name: aggregation
-    ports:
-      - "50051:50051"
-    depends_on:
-      - analysis
-    tty: true
-
-  # Sensor Nodes
   airdata:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.airdata
     container_name: airdata
-    ports:
-      - "50060:50060"
-    depends_on:
-      - aggregation
 
   battery:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.battery
     container_name: battery
-    ports:
-      - "50061:50061"
-    depends_on:
-      - aggregation
-      
+
   engine:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.engine
     container_name: engine
-    ports:
-      - "50062:50062"
-    depends_on:
-      - aggregation
 
   gps:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.gps
     container_name: gps
-    ports:
-      - "50063:50063"
-    depends_on:
-      - aggregation
 
   imu:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.imu
     container_name: imu
+
+  aggregation:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.aggregation
+    container_name: aggregation
+    depends_on:
+      - airdata
+      - battery
+      - engine
+      - gps
+      - imu
     ports:
-      - "50064:50064"
+      - "50051:50051"
+
+  analysis:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.analysis
+    container_name: analysis
     depends_on:
       - aggregation
-
-  # Server Node
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfiles/Dockerfile.server
-    container_name: server
     ports:
-      - "50053:50053"
-    depends_on:
-      - update
-    volumes:
-      - data:/data
+      - "50052:50052"
 
-  # Client Node
-  client:
-    build:
-      context: .
-      dockerfile: Dockerfiles/Dockerfile.client
-    container_name: client
-    tty: true
-    stdin_open: true
-    depends_on:
-      - server
-
-  # Update Node
   update:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.update
     container_name: update
+    depends_on:
+      - analysis
     ports:
       - "50054:50054"
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.server
+    container_name: server
     depends_on:
-      - aggregation
-      - airdata
-      - battery
-      - engine
-      - gps
-    volumes:
-      - data:/data
+      - update
+    ports:
+      - "50053:50053"
 
-# networks:
-  # drone-net:
-    # driver: bridge
-
-volumes:
-    data:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.client
+    container_name: client
+    depends_on:
+      - server
+    stdin_open: true
+    tty: true

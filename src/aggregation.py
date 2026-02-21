@@ -5,63 +5,38 @@ from concurrent import futures
 import drone_pb2
 import drone_pb2_grpc
 
-ANALYSIS_ADDR = "analysis:50052"
-SENSOR_PORT = 50060
+SENSORS = [
+    "airdata:50060",
+    "battery:50061",
+    "engine:50062",
+    "gps:50063",
+    "imu:50064",
+]
 
 
-class AggregationServicer(drone_pb2_grpc.AggregationServicer):
-    def __init__(self):
-        self.analysis_channel = grpc.insecure_channel(ANALYSIS_ADDR)
-        self.analysis_stub = drone_pb2_grpc.AnalysisStub(self.analysis_channel)
-        
-        self.airdata_channel = grpc.insecure_channel(f"airdata:{SENSOR_PORT + 0}")
-        self.airdata_stub = drone_pb2_grpc.SensorStub(self.airdata_channel)
-        
-        self.battery_channel = grpc.insecure_channel(f"battery:{SENSOR_PORT + 1}")
-        self.battery_stub = drone_pb2_grpc.SensorStub(self.battery_channel)
-        
-        self.engine_channel = grpc.insecure_channel(f"engine:{SENSOR_PORT + 2}")
-        self.engine_stub = drone_pb2_grpc.SensorStub(self.engine_channel)
-        
-        self.gps_channel = grpc.insecure_channel(f"gps:{SENSOR_PORT + 3}")
-        self.gps_stub = drone_pb2_grpc.SensorStub(self.gps_channel)
-        
-        self.imu_channel = grpc.insecure_channel(f"imu:{SENSOR_PORT + 4}")
-        self.imu_stub = drone_pb2_grpc.SensorStub(self.imu_channel)
-        
-        self.stubs = [
-            self.airdata_stub,
-            self.battery_stub,
-            self.engine_stub,
-            self.gps_stub,
-            self.imu_stub
-        ]
-    
-    def GetSensorData(self, request, context):        
-        for stub in self.stubs:
-            response = stub.GetData(drone_pb2.Empty())
-            reason = f"{response.signal}: {response.value}\n"
-            
-            analysis = self.analysis_stub.Analyze(response)
-            
-            print(f"{analysis.ok} {analysis.reason} {response}")
-            
-            if analysis.ok:
-                yield drone_pb2.Ack(ok=True, reason=reason)
-            else:
-                yield drone_pb2.Ack(ok=False, reason=analysis.reason)
-            
+class Aggregation(drone_pb2_grpc.AggregationServicer):
+    def StreamTelemetry(self, request, context):
+        stubs = []
+        for addr in SENSORS:
+            ch = grpc.insecure_channel(addr)
+            stubs.append(drone_pb2_grpc.SensorStub(ch))
+
+        while context.is_active():
+            for stub in stubs:
+                try:
+                    msg = stub.GetTelemetry(drone_pb2.Empty(), timeout=2)
+                    yield msg
+                except grpc.RpcError:
+                    pass
+            time.sleep(1)
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    drone_pb2_grpc.add_AggregationServicer_to_server(
-        AggregationServicer(), server
-    )
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=8))
+    drone_pb2_grpc.add_AggregationServicer_to_server(Aggregation(), server)
     server.add_insecure_port("[::]:50051")
     server.start()
-
-    print("Aggregation node running...")
+    print("Aggregation running...")
     server.wait_for_termination()
 
 

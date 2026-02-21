@@ -4,46 +4,24 @@ from concurrent import futures
 import drone_pb2
 import drone_pb2_grpc
 
+AGG = "aggregation:50051"
 
-class AnalysisServicer(drone_pb2_grpc.AnalysisServicer):
 
-    def Analyze(self, request, context):
-        ack_bool = True
-        reason = ""
-        
-        if request.signal == "egt":
-            if request.value > 800:
-                reason = "Engine: over-temp!"
-                ack_bool = False
-            else:
-                reason = "Engine: good"
+class Analysis(drone_pb2_grpc.AnalysisServicer):
+    def StreamAnalyzed(self, request, context):
+        ch = grpc.insecure_channel(AGG)
+        stub = drone_pb2_grpc.AggregationStub(ch)
 
-        if request.signal == "voltage":
-            if request.value < 13:
-                reason = "Battery: low!"
-                ack_bool = False
-            else:
-                reason = "Battery: good"
-
-        if request.signal == "vibration":
-            if request.value > 0.8:
-                reason = "Vibration: excess!"
-                ack_bool = False
-            else:
-                reason = "Vibration: good"
-        print(f"{request.signal} {ack_bool} {reason}")
-        return drone_pb2.Ack(ok=ack_bool, reason=reason)
+        for msg in stub.StreamTelemetry(drone_pb2.Empty()):
+            yield msg
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    drone_pb2_grpc.add_AnalysisServicer_to_server(
-        AnalysisServicer(), server
-    )
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=8))
+    drone_pb2_grpc.add_AnalysisServicer_to_server(Analysis(), server)
     server.add_insecure_port("[::]:50052")
     server.start()
-
-    print("Analysis node running...")
+    print("Analysis running...")
     server.wait_for_termination()
 
 

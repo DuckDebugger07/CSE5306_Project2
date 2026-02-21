@@ -2,90 +2,46 @@ syntax = "proto3";
 
 package drone;
 
-//////////////////////////////////////////////////////
-// Telemetry message used everywhere in the system
-//////////////////////////////////////////////////////
+message Empty {}
 
-message DroneData {
-  string node = 1;        // engine, battery, airdata, imu, gps
-  string signal = 2;      // EGT, voltage, altitude, vibration, latitude...
-  double value = 3;       // numeric telemetry value
-  int64 timestamp = 4;    // epoch milliseconds
+message Telemetry {
+  string signal = 1;
+  double value = 2;
+  bool alert = 3;
+  string message = 4;
+  int64 ts_ms = 5;
 }
 
-//////////////////////////////////////////////////////
-// Generic acknowledgement
-//////////////////////////////////////////////////////
-
-message Ack {
-  bool ok = 1;
-  string reason = 2;
+message Command {
+  string text = 1;
 }
 
-//////////////////////////////////////////////////////
-// Update Service
-// Upfate -> Aggregation
-//////////////////////////////////////////////////////
-
-service Update {
-  rpc UpdateSensors (ClientQuery) returns (stream Ack);
+message Reply {
+  string text = 1;
 }
 
-//////////////////////////////////////////////////////
-// Aggregation Service
-// Sensors -> Aggregation
-//////////////////////////////////////////////////////
+// Sensor nodes
+service Sensor {
+  rpc GetTelemetry(Empty) returns (Telemetry);
+}
 
+// Aggregation node
 service Aggregation {
-  rpc GetSensorData (Empty) returns (stream Ack);
+  rpc StreamTelemetry(Empty) returns (stream Telemetry);
 }
 
-service Sensor{
-  rpc GetData (Empty) returns (DroneData);
-}
-
-//////////////////////////////////////////////////////
-// Analysis Service
-// Aggregation -> Analysis
-//////////////////////////////////////////////////////
-
+// Analysis node
 service Analysis {
-  rpc Analyze (DroneData) returns (Ack);
+  rpc StreamAnalyzed(Empty) returns (stream Telemetry);
 }
 
-//////////////////////////////////////////////////////
-// Alert Service (future extension)
-// Analysis -> Alert
-//////////////////////////////////////////////////////
-
-message AlertEvent {
-  string source_node = 1;
-  string message = 2;
-  int64 timestamp = 3;
+// Update node
+service Update {
+  rpc StreamUpdate(Empty) returns (stream Telemetry);
+  rpc SendCommand(Command) returns (Reply);
 }
 
-service Alert {
-  rpc RaiseAlert (AlertEvent) returns (Ack);
+// Server node
+service Server {
+  rpc SendCommand(Command) returns (Reply);
 }
-
-//////////////////////////////////////////////////////
-// Client Server Service
-//////////////////////////////////////////////////////
-service Query
-{
-	rpc CheckRunning (Empty) returns (Ack);
-    rpc SendQuery (ClientQuery) returns (ServerReply) {}
-	rpc UpdateData (Empty) returns (Ack);
-}
-
-message ClientQuery
-{
-    string request = 1;
-}
-
-message ServerReply
-{
-    string reply = 1;
-}
-
-message Empty{}

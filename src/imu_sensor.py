@@ -1,35 +1,46 @@
-import time, random, grpc
-import drone_pb2, drone_pb2_grpc
+import time
+import random
+import grpc
 from concurrent import futures
 
-AGG = "aggregation:50051"
+import drone_pb2
+import drone_pb2_grpc
 
-class IMU(drone_pb2_grpc.SensorServicer):
-    def now (self):
-        return int(time.time()*1000)
-    
-    def GetData(self, unknown, context):
-        vib = random.uniform(0.1, 0.4)
+SIGNAL = "vibration"
 
-        # fault injection: vibration spike
-        if random.random() < 0.06:
-            vib = random.uniform(0.9, 1.5)
-        
-        return drone_pb2.DroneData(
-            node="imu",
-            signal="vibration",
-            value=vib,
-            timestamp=self.now()
+
+class IMUSensor(drone_pb2_grpc.SensorServicer):
+    def GetTelemetry(self, request, context):
+        value = random.uniform(0, 10)
+
+        alert = False
+        message = ""
+
+        if value > 7.5:
+            alert = True
+            message = "Vibration high"
+
+        if value > 9:
+            alert = True
+            message = "Vibration severe"
+
+        return drone_pb2.Telemetry(
+            signal=SIGNAL,
+            value=value,
+            alert=alert,
+            message=message,
+            ts_ms=int(time.time() * 1000),
         )
 
+
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    drone_pb2_grpc.add_SensorServicer_to_server(IMU(), server)
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
+    drone_pb2_grpc.add_SensorServicer_to_server(IMUSensor(), server)
     server.add_insecure_port("[::]:50064")
     server.start()
     print("IMU sensor running...")
     server.wait_for_termination()
 
+
 if __name__ == "__main__":
     serve()
-

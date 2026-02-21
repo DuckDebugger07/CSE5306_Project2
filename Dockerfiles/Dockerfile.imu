@@ -2,11 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY src/imu_sensor.py /app/
-COPY src/drone_pb2* /app/
-
 RUN pip install --no-cache-dir grpcio grpcio-tools
 
-EXPOSE 50064
+COPY src/ ./src/
+COPY drone.proto .
+
+WORKDIR /app/src
 
 CMD ["python", "imu_sensor.py"]

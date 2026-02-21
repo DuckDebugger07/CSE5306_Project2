@@ -1,80 +1,89 @@
-import os
-import sqlite3
 import grpc
 from concurrent import futures
+import time
 
 import drone_pb2
 import drone_pb2_grpc
 
-AGG = "aggregation:50051"
+ANALYSIS = "analysis:50052"
 
-"""
-def main():
-    with grpc.insecure_channel(AGG) as channel:
-        stub = drone_pb2_grpc.AggregationStub(channel)
-        
-        for ack in stub.GetSensorData(drone_pb2.Empty()):
-            print(ack.reason.split(":"))
-"""
 
-class UpdateServicer(drone_pb2_grpc.UpdateServicer):
+class Update(drone_pb2_grpc.UpdateServicer):
     def __init__(self):
-        self.db_path = "/data/data.db"
-        
-        self.aggregation_channel = grpc.insecure_channel(AGG)
-        self.aggregation_stub = drone_pb2_grpc.AggregationStub(self.aggregation_channel)
-        
-    def UpdateSensors(self, request, context):
-        drone_name = request.request
-        sensor_data = {}
-        failures = []
-        
-        for ack in self.aggregation_stub.GetSensorData(drone_pb2.Empty()):
-            key, value = ack.reason.split(":")
-            if ack.ok:
-                sensor_data[key] = value
-            
-            else:
-                sensor_data[key] = None
-                failures.append(f"{key} : {value}")
-        print(failures)
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        cursor.execute("""
-            UPDATE sensors
-            SET
-                altitude = ?,
-                voltage = ?,
-                egt = ?,
-                latitude = ?,
-                vibration = ?
-            WHERE name = ?
-        """, (
-            sensor_data.get("altitude"),
-            sensor_data.get("voltage"),
-            sensor_data.get("egt"),
-            sensor_data.get("latitude"),
-            sensor_data.get("vibration"),
-            drone_name
+        self.analysis_channel = grpc.insecure_channel(ANALYSIS)
+        self.analysis_stub = drone_pb2_grpc.AnalysisStub(self.analysis_channel)
+
+    # Keep streaming support
+    def StreamUpdate(self, request, context):
+        for msg in self.analysis_stub.StreamAnalyzed(drone_pb2.Empty()):
+            yield msg
+
+    # Add command handling RPC
+    def SendCommand(self, request, context):
+        cmd = request.text.strip().lower()
+
+        # Collect one batch of telemetry
+        telemetry = []
+        for msg in self.analysis_stub.StreamAnalyzed(drone_pb2.Empty()):
+            telemetry.append(msg)
+            if len(telemetry) >= 10:
+                break
+
+        if cmd == "status":
+            return drone_pb2.Reply(text="System online.")
+
+        if cmd == "health":
+            alerts = [m for m in telemetry if m.alert]
+            if alerts:
+                return drone_pb2.Reply(text="⚠ Alerts present.")
+            return drone_pb2.Reply(text="All systems nominal.")
+
+        if cmd == "list":
+            names = sorted(set(m.signal for m in telemetry))
+            return drone_pb2.Reply(text="\n".join(names))
+
+        if cmd.startswith("sensor "):
+            parts = cmd.split()
+            if len(parts) != 2:
+                return drone_pb2.Reply(text="Usage: sensor <name>")
+
+            name = parts[1]
+            for m in telemetry:
+                if m.signal == name:
+                    return drone_pb2.Reply(text=f"{name}: {m.value:.2f}")
+
+            return drone_pb2.Reply(text=f"Sensor '{name}' not found.")
+
+        if cmd == "alerts":
+            alerts = [f"{m.signal}: {m.message}" for m in telemetry if m.alert]
+            if alerts:
+                return drone_pb2.Reply(text="\n".join(alerts))
+            return drone_pb2.Reply(text="No active alerts.")
+
+        if cmd == "help":
+            return drone_pb2.Reply(text=
+                "Available commands:\n"
+                "  help\n"
+                "  status\n"
+                "  health\n"
+                "  list\n"
+                "  sensor <name>\n"
+                "  alerts\n"
+                "  quit"
             )
-        )
-        
-        conn.commit()
-        conn.close()
-        
-        for fail in failures:
-            yield drone_pb2.Ack(ok=False, reason=fail)
+
+        if cmd == "quit":
+            return drone_pb2.Reply(text="Exiting client.")
+
+        return drone_pb2.Reply(text="Unknown command.")
+
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    drone_pb2_grpc.add_UpdateServicer_to_server(
-        UpdateServicer(), server
-    )
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=8))
+    drone_pb2_grpc.add_UpdateServicer_to_server(Update(), server)
     server.add_insecure_port("[::]:50054")
     server.start()
-
-    print("Update node running...")
+    print("Update running...")
     server.wait_for_termination()
 
 
