@@ -19,10 +19,10 @@ Telemetry flows through a multi-stage processing pipeline before reaching an int
 
 # 2. System Architecture
 
-Telemetry flow:
+Telemetry Flow:
 Sensors → Aggregation → Analysis → Update → Server → Client
 
-Command flow:
+Command Flow:
 Client → Server → Update
 
 Each stage runs in its own Docker container.
@@ -40,7 +40,7 @@ Containers:
 
 Each sensor:
 - Generates a telemetry value
-- Determines if an alert condition exists
+- Determines alert conditions
 - Responds to GetTelemetry RPC
 
 ---
@@ -85,7 +85,6 @@ Each sensor:
 
 # 3. Project Structure
 
-```
 src/
   aggregation.py
   analysis.py
@@ -103,128 +102,78 @@ src/
 
 Dockerfile.*
 docker-compose.yml
+run.sh
 README.md
-```
 
-All Python code resides in `src/`.
+All Python source code resides in `src/`.
 
 ---
 
 # 4. Build & Run Instructions
 
-You MUST run commands from the project root (where docker-compose.yml is located).
+Run all commands from the project root (where docker-compose.yml is located).
 
 ---
 
-## Step 1 – Stop and Clean
+## Option A – Recommended (Use Script)
 
-```
+Make script executable:
+
+chmod +x run.sh
+
+Run:
+
+./run.sh
+
+The script performs:
+
 docker compose down -v
-docker system prune -f
-```
-
-- Stops containers
-- Removes volumes
-- Cleans unused images
-
----
-
-## Step 2 – Build Images
-
-```
 docker compose build --no-cache
-```
-
-Ensures fresh rebuild of all services.
-
----
-
-## Step 3 – Start Infrastructure (Background Mode)
-
-```
 docker compose up -d
-```
-
-Starts:
-- sensors
-- aggregation
-- analysis
-- update
-- server
-
-Verify containers are running:
-
-```
-docker ps
-```
+docker compose run --rm client
 
 ---
 
-## Step 4 – Run Client Interactively
+## Option B – Manual Execution
 
-Do NOT use `docker compose up` for client interaction.
+1. Clean previous containers:
 
-Instead:
+docker compose down -v
 
-```
+2. Build images:
+
+docker compose build --no-cache
+
+3. Start infrastructure (background mode):
+
+docker compose up -d
+
+4. Run client interactively:
+
 docker compose run --rm client
-```
 
 You should see:
 
-```
 Client ready. Type help.
 >
-```
-
-Now you can enter commands.
 
 ---
 
 # 5. Available Client Commands
 
----
-
-## help
-
+help  
 Displays available commands.
 
-```
-help
-```
-
----
-
-## status
-
+status  
 Displays system status.
 
-```
-status
-```
-
----
-
-## health
-
+health  
 Displays overall health (based on alerts).
 
-```
-health
-```
-
----
-
-## list
-
+list  
 Lists available sensor names.
 
-```
-list
-```
-
-Expected output:
-
+Expected sensors:
 - altitude
 - airspeed
 - voltage
@@ -233,180 +182,69 @@ Expected output:
 - longitude
 - vibration
 
----
-
-## sensor <name>
-
-Displays current value for specific sensor.
+sensor <name>  
+Displays current value for a specific sensor.
 
 Example:
-
-```
 sensor voltage
-```
 
-Example output:
+alerts  
+Displays all currently active alerts.
 
-```
-voltage: 24.50 V
-```
-
----
-
-## alerts
-
-Displays all currently active sensor alerts.
-
-```
-alerts
-```
-
----
-
-### Example – No Alerts Active
-
-```
-alerts
-```
-
-Output:
-
-```
+If no alerts:
 No active alerts.
-```
 
----
-
-### Example – Single Alert
-
-If the battery voltage drops below its threshold:
-
-```
-alerts
-```
-
-Output:
-
-```
-voltage: Battery low (18.90 V)
-```
-
----
-
-### Example – Multiple Alerts
-
-If multiple sensors report alert conditions:
-
-```
-alerts
-```
-
-Output:
-
-```
-voltage: Battery critical (17.80 V)
-egt: Engine temperature high (720.50 °C)
-altitude: Altitude critically low (42.00 ft)
-```
-
----
-
-### How Alerts Work
-
-Each sensor determines its own alert condition based on thresholds.  
-If `alert == true` in the telemetry message, the system:
-
-1. Propagates the alert through Aggregation → Analysis → Update  
-2. Makes it available to the Server  
-3. Displays it when the `alerts` command is issued  
-
-Alerts are generated in the **sensor nodes**, not fabricated by the server.
----
-
-## quit
-
-Exits client.
-
-```
-quit
-```
+quit  
+Exits the client.
 
 ---
 
 # 6. Units Used
 
-| Sensor     | Units |
-|------------|-------|
-| altitude   | ft    |
-| airspeed   | kt    |
-| voltage    | V     |
-| egt        | °C    |
-| latitude   | deg   |
-| longitude  | deg   |
-| vibration  | g     |
+Sensor     | Units
+-----------|------
+altitude   | ft
+airspeed   | kt
+voltage    | V
+egt        | °C
+latitude   | deg
+longitude  | deg
+vibration  | g
 
 ---
 
 # 7. Troubleshooting
 
----
+Client won’t accept input:
 
-## Client Won’t Accept Input
-
-You likely ran:
-
-```
-docker compose up
-```
-
-Correct approach:
-
-```
+Correct startup:
 docker compose up -d
 docker compose run --rm client
-```
 
----
+Do NOT use:
+docker attach client
 
-## Method Not Implemented
-
-Rebuild everything:
-
-```
+Method not implemented:
 docker compose down -v
 docker compose build --no-cache
 docker compose up -d
-```
 
----
-
-## DNS Resolution Errors
-
-Ensure aggregation and analysis containers are running:
-
-```
+Containers not starting:
 docker ps
-```
 
 ---
 
 # 8. End-to-End Execution Summary
 
-```
 docker compose down -v
 docker compose build --no-cache
 docker compose up -d
 docker compose run --rm client
-```
 
 Then type:
 
-```
 help
 status
 list
 sensor voltage
 alerts
-```
-
----
