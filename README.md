@@ -6,21 +6,20 @@ gRPC + Docker Compose
 
 # 1. Overview
 
-This project implements a distributed telemetry processing pipeline for a drone using:
+This project implements a distributed drone telemetry processing pipeline using:
 
-- Python 3.11
-- gRPC
-- Docker Compose
+- Python 3.11  
+- gRPC  
+- Docker Compose  
 
-The system simulates multiple sensor nodes that generate telemetry and alerts.  
-Telemetry flows through a multi-stage processing pipeline before reaching an interactive client.
+The system simulates multiple independent sensor services that generate telemetry data and alert conditions. Telemetry flows through a multi-stage processing pipeline before reaching an interactive client interface.
 
-Two architectures are provided:
+Two architectures are implemented:
 
-1. Distributed Microservices Architecture  
+1. Distributed Microservices Architecture
 2. Monolithic Architecture (Single Container)
 
-Both architectures expose the same gRPC interface to ensure functional equivalence while enabling performance comparison.
+Both architectures expose the same gRPC interface to ensure functional equivalence and allow direct performance comparison.
 
 ---
 
@@ -30,10 +29,11 @@ Both architectures expose the same gRPC interface to ensure functional equivalen
 
 Sensors → Aggregation → Analysis → Update → Server → Client  
 
-Command Flow:  
+Command Flow:
+
 Client ↔ Server ↔ Update  
 
-Each stage runs in its own Docker container.
+Each stage runs inside its own Docker container and communicates via gRPC.
 
 ---
 
@@ -41,13 +41,12 @@ Each stage runs in its own Docker container.
 
 All telemetry generation and processing logic runs inside a single container.
 
-This removes inter-container RPC overhead while preserving identical client behavior.
+This removes inter-container RPC overhead while preserving identical client functionality.
 
 ---
 
 # 3. Project Structure
 
-```
 src/
   aggregation.py
   analysis.py
@@ -78,14 +77,11 @@ Dockerfiles/
   Dockerfile.monolith
 
 docker-compose.yml
-
 run_distributed.sh
 run_monolith.sh
-
 README.md
-```
 
-All Python source code resides in `src/`.
+All Python source files reside in `src/`.
 
 ---
 
@@ -93,71 +89,82 @@ All Python source code resides in `src/`.
 
 Run all commands from the project root (where docker-compose.yml is located).
 
-The system uses Docker Compose profiles to isolate the distributed and monolithic architectures.
+Docker Compose profiles are used to isolate architectures.
 
 ---
 
 ## 🔵 Run Distributed Architecture
 
-```
 ./run_distributed.sh
-```
 
-This script will:
+Equivalent manual commands:
 
-1. Stop and remove existing containers
-2. Build distributed services
-3. Start all distributed containers
-4. Launch the client
+docker compose down -v --remove-orphans
+docker compose --profile distributed up -d --build
+docker compose run --rm client
 
 ---
 
 ## 🟣 Run Monolithic Architecture
 
-```
 ./run_monolith.sh
-```
 
-This script will:
+Equivalent manual commands:
 
-1. Stop and remove existing containers
-2. Build the monolith container
-3. Start the monolith
-4. Launch the client
+docker compose down -v --remove-orphans
+docker compose --profile monolith up -d --build
+docker compose run --rm client
 
 ---
 
 ## 🔄 Switching Architectures
 
-No manual cleanup is required.  
-Each script automatically performs:
+No manual cleanup required.
 
-```
+Each run script automatically executes:
+
 docker compose down -v --remove-orphans
-```
 
-before starting the selected architecture.
-
-Do NOT run both architectures simultaneously.  
-Both architectures bind to port `50053` and must be executed independently.
+Important:
+Both architectures bind to port 50053.  
+Do NOT attempt to run them simultaneously.
 
 ---
 
 # 5. Available Client Commands
 
 help  
-Displays available commands.
+  Displays available commands.
 
 status  
-Displays system status.
+  Displays system status.
 
 health  
-Displays overall health (based on alerts).
+  Displays overall health (based on alerts).
 
 list  
-Lists available sensor names.
+  Lists available sensor names.
 
-Sensors:
+sensor <name>  
+  Displays current value for a specific sensor.
+
+alerts  
+  Displays all currently active alerts.
+
+benchmark latency <samples>  
+  Runs latency benchmark using <samples> RPC calls.
+
+benchmark throughput <seconds>  
+  Runs throughput benchmark for <seconds>.
+
+benchmark stress <clients> <seconds>  
+  Runs concurrency stress test using <clients> for <seconds>.
+
+quit  
+  Exits the client.
+
+### Sensor Names
+
 - altitude
 - airspeed
 - voltage
@@ -166,19 +173,9 @@ Sensors:
 - longitude
 - vibration
 
-sensor <name>  
-Displays current value for a specific sensor.
-
 Example:
-```
+
 sensor voltage
-```
-
-alerts  
-Displays all currently active alerts.
-
-quit  
-Exits the client.
 
 ---
 
@@ -196,61 +193,79 @@ Exits the client.
 
 ---
 
-# 7. Performance Comparison
+# 7. Benchmarking
 
-The monolithic architecture removes network serialization and RPC chaining overhead.
+Run benchmarks while inside the client.
 
-Expected trade-offs:
+Latency test (example):
 
-Distributed Architecture:
-- Higher modularity
-- Service isolation
-- Increased RPC overhead
+benchmark latency 2000
 
-Monolithic Architecture:
-- Lower latency
-- Higher throughput
-- Reduced architectural separation
+Throughput test:
+
+benchmark throughput 10
+benchmark throughput 30
+
+Concurrency stress test:
+
+benchmark stress 5 15
+benchmark stress 20 20
 
 ---
 
-# 8. Troubleshooting
+# 8. Docker Resource Monitoring
 
-If scripts are not executable:
+While the system is running in another terminal:
 
-```
+docker stats
+
+This displays:
+
+- CPU usage
+- Memory usage
+- Network I/O
+- Container resource consumption
+
+Stop monitoring with Ctrl + C.
+
+---
+
+# 9. Performance Comparison Summary
+
+Distributed Architecture:
+- Service isolation
+- Modular design
+- RPC chaining overhead
+- Centralized pipeline stages
+
+Monolithic Architecture:
+- No inter-container serialization
+- Reduced RPC overhead
+- Single failure domain
+- Lower architectural separation
+
+---
+
+# 10. Troubleshooting
+
+Make scripts executable:
+
 chmod +x run_distributed.sh
 chmod +x run_monolith.sh
-```
 
 Check running containers:
 
-```
 docker ps
-```
 
-Stop everything manually:
+Force shutdown everything:
 
-```
 docker compose down -v --remove-orphans
-```
 
 ---
 
-# 9. Manual Commands (Optional)
+# 11. Notes
 
-Distributed:
-
-```
-docker compose down -v --remove-orphans
-docker compose --profile distributed up -d --build
-docker compose run --rm client
-```
-
-Monolith:
-
-```
-docker compose down -v --remove-orphans
-docker compose --profile monolith up -d --build
-docker compose run --rm client
-```
+- Do not run distributed and monolith simultaneously.
+- Always switch using provided scripts.
+- Ensure port 50053 is free before starting either architecture.
+- Benchmarks should be run with minimal host background load for accurate results.
