@@ -93,6 +93,8 @@ All Python source code resides in `src/`.
 
 Run all commands from the project root (where docker-compose.yml is located).
 
+The system uses Docker Compose profiles to isolate the distributed and monolithic architectures.
+
 ---
 
 ## 🔵 Run Distributed Architecture
@@ -136,7 +138,8 @@ docker compose down -v --remove-orphans
 
 before starting the selected architecture.
 
-Do NOT run both architectures simultaneously.
+Do NOT run both architectures simultaneously.  
+Both architectures bind to port `50053` and must be executed independently.
 
 ---
 
@@ -239,13 +242,15 @@ docker compose down -v --remove-orphans
 Distributed:
 
 ```
-docker compose --profile distributed up -d
+docker compose down -v --remove-orphans
+docker compose --profile distributed up -d --build
 docker compose run --rm client
 ```
 
 Monolith:
 
 ```
-docker compose --profile monolith up -d
+docker compose down -v --remove-orphans
+docker compose --profile monolith up -d --build
 docker compose run --rm client
 ```
