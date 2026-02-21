@@ -17,10 +17,10 @@ Telemetry flows through a multi-stage processing pipeline before reaching an int
 
 Two architectures are provided:
 
-1. Distributed Microservices Architecture
-2. Monolithic Architecture (Single Container) for performance comparison
+1. Distributed Microservices Architecture  
+2. Monolithic Architecture (Single Container)
 
-Docker Compose profiles are used to switch between architectures.
+Both architectures expose the same gRPC interface to ensure functional equivalence while enabling performance comparison.
 
 ---
 
@@ -28,11 +28,10 @@ Docker Compose profiles are used to switch between architectures.
 
 ## Distributed Telemetry Flow
 
-Sensors → Aggregation → Analysis → Update → Server → Client
+Sensors → Aggregation → Analysis → Update → Server → Client  
 
-Command Flow:
-
-Client ↔ Server ↔ Update
+Command Flow:  
+Client ↔ Server ↔ Update  
 
 Each stage runs in its own Docker container.
 
@@ -40,9 +39,9 @@ Each stage runs in its own Docker container.
 
 ## Monolithic Architecture
 
-All processing (aggregation, analysis, update, server logic) runs inside a single container.
+All telemetry generation and processing logic runs inside a single container.
 
-This version removes inter-container RPC overhead to allow performance comparison.
+This removes inter-container RPC overhead while preserving identical client behavior.
 
 ---
 
@@ -79,7 +78,10 @@ Dockerfiles/
   Dockerfile.monolith
 
 docker-compose.yml
-run.sh
+
+run_distributed.sh
+run_monolith.sh
+
 README.md
 ```
 
@@ -87,77 +89,52 @@ All Python source code resides in `src/`.
 
 ---
 
-# 4. Build & Run Instructions
+# 4. Running the System
 
 Run all commands from the project root (where docker-compose.yml is located).
 
 ---
 
-# A. Run Distributed Architecture
-
-Clean previous containers:
+## 🔵 Run Distributed Architecture
 
 ```
-docker compose down -v --remove-orphans
+./run_distributed.sh
 ```
 
-Start distributed services:
+This script will:
 
-```
-docker compose --profile distributed up -d
-```
-
-Run client:
-
-```
-docker compose run --rm client
-```
-
-If you exit the client and want to reconnect:
-
-```
-docker compose run --rm client
-```
+1. Stop and remove existing containers
+2. Build distributed services
+3. Start all distributed containers
+4. Launch the client
 
 ---
 
-# B. Run Monolithic Architecture (Performance Comparison)
-
-Clean previous containers:
+## 🟣 Run Monolithic Architecture
 
 ```
-docker compose down -v --remove-orphans
+./run_monolith.sh
 ```
 
-Start monolith:
+This script will:
 
-```
-docker compose --profile monolith up -d
-```
-
-Run client:
-
-```
-docker compose run --rm client
-```
-
-If you exit the client and want to reconnect:
-
-```
-docker compose run --rm client
-```
+1. Stop and remove existing containers
+2. Build the monolith container
+3. Start the monolith
+4. Launch the client
 
 ---
 
-# IMPORTANT
+## 🔄 Switching Architectures
 
-You must always run:
+No manual cleanup is required.  
+Each script automatically performs:
 
 ```
 docker compose down -v --remove-orphans
 ```
 
-before switching between distributed and monolith modes.
+before starting the selected architecture.
 
 Do NOT run both architectures simultaneously.
 
@@ -218,57 +195,50 @@ Exits the client.
 
 # 7. Performance Comparison
 
-The monolithic architecture is used to measure performance differences.
+The monolithic architecture removes network serialization and RPC chaining overhead.
 
-Expected characteristics:
+Expected trade-offs:
 
 Distributed Architecture:
 - Higher modularity
-- Network overhead between services
-- Better separation of concerns
+- Service isolation
+- Increased RPC overhead
 
 Monolithic Architecture:
 - Lower latency
 - Higher throughput
-- Reduced RPC overhead
-
-This comparison demonstrates architectural trade-offs between modularity and performance efficiency.
+- Reduced architectural separation
 
 ---
 
 # 8. Troubleshooting
 
-If you receive container name conflicts:
+If scripts are not executable:
 
 ```
-docker compose down -v --remove-orphans
-docker rm -f server 2>/dev/null
-```
-
-If client does not accept input:
-Always use:
-```
-docker compose run --rm client
-```
-
-Do NOT use:
-```
-docker attach client
+chmod +x run_distributed.sh
+chmod +x run_monolith.sh
 ```
 
 Check running containers:
+
 ```
 docker ps
 ```
 
+Stop everything manually:
+
+```
+docker compose down -v --remove-orphans
+```
+
 ---
 
-# 9. Quick Command Summary
+# 9. Manual Commands (Optional)
 
 Distributed:
 
 ```
-docker compose down -v --remove-orphans
 docker compose --profile distributed up -d
 docker compose run --rm client
 ```
@@ -276,13 +246,6 @@ docker compose run --rm client
 Monolith:
 
 ```
-docker compose down -v --remove-orphans
 docker compose --profile monolith up -d
 docker compose run --rm client
-```
-
-Stop everything:
-
-```
-docker compose down -v --remove-orphans
 ```
