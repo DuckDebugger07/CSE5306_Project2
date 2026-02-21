@@ -8,6 +8,6 @@ COPY src/ ./src/
 
 WORKDIR /app/src
 
-EXPOSE 50060
+EXPOSE 50053
 
 CMD ["python", "monolith.py"]

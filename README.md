@@ -6,7 +6,7 @@ gRPC + Docker Compose
 
 # 1. Overview
 
-This project implements a distributed telemetry pipeline for a single drone using:
+This project implements a distributed telemetry processing pipeline for a drone using:
 
 - Python 3.11
 - gRPC
@@ -15,82 +15,47 @@ This project implements a distributed telemetry pipeline for a single drone usin
 The system simulates multiple sensor nodes that generate telemetry and alerts.  
 Telemetry flows through a multi-stage processing pipeline before reaching an interactive client.
 
+Two architectures are provided:
+
+1. Distributed Microservices Architecture
+2. Monolithic Architecture (Single Container) for performance comparison
+
+Docker Compose profiles are used to switch between architectures.
+
 ---
 
 # 2. System Architecture
 
-Telemetry Flow:
+## Distributed Telemetry Flow
+
 Sensors → Aggregation → Analysis → Update → Server → Client
 
 Command Flow:
-Client → Server → Update
+
+Client ↔ Server ↔ Update
 
 Each stage runs in its own Docker container.
 
 ---
 
-## Sensors
+## Monolithic Architecture
 
-Containers:
-- imu
-- gps
-- engine
-- battery
-- airdata
+All processing (aggregation, analysis, update, server logic) runs inside a single container.
 
-Each sensor:
-- Generates a telemetry value
-- Determines alert conditions
-- Responds to GetTelemetry RPC
-
----
-
-## Aggregation (port 50051)
-
-- Connects to all sensor nodes
-- Collects telemetry
-- Streams telemetry upward
-
----
-
-## Analysis (port 50052)
-
-- Receives telemetry stream
-- Performs optional alert checks
-- Passes stream upward
-
----
-
-## Update (port 50054)
-
-- Forwards telemetry stream
-- Processes command requests
-
----
-
-## Server (port 50053)
-
-- Provides command interface for client
-- Forwards commands to Update service
-
----
-
-## Client
-
-- Interactive command-line interface
-- Sends commands to Server
-- Displays formatted output
+This version removes inter-container RPC overhead to allow performance comparison.
 
 ---
 
 # 3. Project Structure
 
+```
 src/
   aggregation.py
   analysis.py
   update.py
   server.py
   client.py
+  monolith.py
   imu_sensor.py
   gps_sensor.py
   engine_sensor.py
@@ -100,10 +65,23 @@ src/
   drone_pb2.py
   drone_pb2_grpc.py
 
-Dockerfile.*
+Dockerfiles/
+  Dockerfile.airdata
+  Dockerfile.battery
+  Dockerfile.engine
+  Dockerfile.gps
+  Dockerfile.imu
+  Dockerfile.aggregation
+  Dockerfile.analysis
+  Dockerfile.update
+  Dockerfile.server
+  Dockerfile.client
+  Dockerfile.monolith
+
 docker-compose.yml
 run.sh
 README.md
+```
 
 All Python source code resides in `src/`.
 
@@ -115,47 +93,73 @@ Run all commands from the project root (where docker-compose.yml is located).
 
 ---
 
-## Option A – Recommended (Use Script)
+# A. Run Distributed Architecture
 
-Make script executable:
+Clean previous containers:
 
-chmod +x run.sh
+```
+docker compose down -v --remove-orphans
+```
 
-Run:
+Start distributed services:
 
-./run.sh
+```
+docker compose --profile distributed up -d
+```
 
-The script performs:
+Run client:
 
-docker compose down -v
-docker compose build --no-cache
-docker compose up -d
+```
 docker compose run --rm client
+```
+
+If you exit the client and want to reconnect:
+
+```
+docker compose run --rm client
+```
 
 ---
 
-## Option B – Manual Execution
+# B. Run Monolithic Architecture (Performance Comparison)
 
-1. Clean previous containers:
+Clean previous containers:
 
-docker compose down -v
+```
+docker compose down -v --remove-orphans
+```
 
-2. Build images:
+Start monolith:
 
-docker compose build --no-cache
+```
+docker compose --profile monolith up -d
+```
 
-3. Start infrastructure (background mode):
+Run client:
 
-docker compose up -d
-
-4. Run client interactively:
-
+```
 docker compose run --rm client
+```
 
-You should see:
+If you exit the client and want to reconnect:
 
-Client ready. Type help.
->
+```
+docker compose run --rm client
+```
+
+---
+
+# IMPORTANT
+
+You must always run:
+
+```
+docker compose down -v --remove-orphans
+```
+
+before switching between distributed and monolith modes.
+
+Do NOT run both architectures simultaneously.
 
 ---
 
@@ -173,7 +177,7 @@ Displays overall health (based on alerts).
 list  
 Lists available sensor names.
 
-Expected sensors:
+Sensors:
 - altitude
 - airspeed
 - voltage
@@ -186,13 +190,12 @@ sensor <name>
 Displays current value for a specific sensor.
 
 Example:
+```
 sensor voltage
+```
 
 alerts  
 Displays all currently active alerts.
-
-If no alerts:
-No active alerts.
 
 quit  
 Exits the client.
@@ -201,50 +204,85 @@ Exits the client.
 
 # 6. Units Used
 
-Sensor     | Units
------------|------
-altitude   | ft
-airspeed   | kt
-voltage    | V
-egt        | °C
-latitude   | deg
-longitude  | deg
-vibration  | g
+| Sensor     | Units |
+|------------|-------|
+| altitude   | ft    |
+| airspeed   | kt    |
+| voltage    | V     |
+| egt        | °C    |
+| latitude   | deg   |
+| longitude  | deg   |
+| vibration  | g     |
 
 ---
 
-# 7. Troubleshooting
+# 7. Performance Comparison
 
-Client won’t accept input:
+The monolithic architecture is used to measure performance differences.
 
-Correct startup:
-docker compose up -d
+Expected characteristics:
+
+Distributed Architecture:
+- Higher modularity
+- Network overhead between services
+- Better separation of concerns
+
+Monolithic Architecture:
+- Lower latency
+- Higher throughput
+- Reduced RPC overhead
+
+This comparison demonstrates architectural trade-offs between modularity and performance efficiency.
+
+---
+
+# 8. Troubleshooting
+
+If you receive container name conflicts:
+
+```
+docker compose down -v --remove-orphans
+docker rm -f server 2>/dev/null
+```
+
+If client does not accept input:
+Always use:
+```
 docker compose run --rm client
+```
 
 Do NOT use:
+```
 docker attach client
+```
 
-Method not implemented:
-docker compose down -v
-docker compose build --no-cache
-docker compose up -d
-
-Containers not starting:
+Check running containers:
+```
 docker ps
+```
 
 ---
 
-# 8. End-to-End Execution Summary
+# 9. Quick Command Summary
 
-docker compose down -v
-docker compose build --no-cache
-docker compose up -d
+Distributed:
+
+```
+docker compose down -v --remove-orphans
+docker compose --profile distributed up -d
 docker compose run --rm client
+```
 
-Then type:
+Monolith:
 
-help
-status
-list
-sensor voltage
-alerts
+```
+docker compose down -v --remove-orphans
+docker compose --profile monolith up -d
+docker compose run --rm client
+```
+
+Stop everything:
+
+```
+docker compose down -v --remove-orphans
+```

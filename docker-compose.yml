@@ -4,30 +4,35 @@ services:
       context: .
       dockerfile: Dockerfiles/Dockerfile.airdata
     container_name: airdata
+    profiles: ["distributed"]
 
   battery:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.battery
     container_name: battery
+    profiles: ["distributed"]
 
   engine:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.engine
     container_name: engine
+    profiles: ["distributed"]
 
   gps:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.gps
     container_name: gps
+    profiles: ["distributed"]
 
   imu:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.imu
     container_name: imu
+    profiles: ["distributed"]
 
   aggregation:
     build:
@@ -42,6 +47,7 @@ services:
       - imu
     ports:
       - "50051:50051"
+    profiles: ["distributed"]
 
   analysis:
     build:
@@ -52,6 +58,7 @@ services:
       - aggregation
     ports:
       - "50052:50052"
+    profiles: ["distributed"]
 
   update:
     build:
@@ -62,6 +69,7 @@ services:
       - analysis
     ports:
       - "50054:50054"
+    profiles: ["distributed"]
 
   server:
     build:
@@ -72,13 +80,22 @@ services:
       - update
     ports:
       - "50053:50053"
+    profiles: ["distributed"]
+
+  # -------- MONOLITH VERSION --------
+  monolith:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.monolith
+    container_name: server
+    ports:
+      - "50053:50053"
+    profiles: ["monolith"]
 
   client:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.client
     container_name: client
-    depends_on:
-      - server
     stdin_open: true
     tty: true
